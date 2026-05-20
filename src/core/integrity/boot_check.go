@@ -76,7 +76,7 @@ func RunBootCheck(ctx context.Context, walPath string, db *pgx.Conn) (*BootCheck
 		}
 
 		// Re-hash to verify block integrity
-		recalculatedHash, _, err := ledger.CalculateBlockHash(block.Index, block.Timestamp, block.PrevHash, jsonPayload(block.Payload))
+		recalculatedHash, _, err := ledger.CalculateBlockHash(block.Index, block.UUID, block.Timestamp, block.PrevHash, jsonPayload(block.Payload))
 		if err != nil {
 			return nil, fmt.Errorf("failed to recalculate hash at index %d: %w", block.Index, err)
 		}
