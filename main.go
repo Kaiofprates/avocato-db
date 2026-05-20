@@ -4,10 +4,10 @@ import (
 	"avocato-db/src/api/handlers"
 	"avocato-db/src/config"
 	"avocato-db/src/core"
+	"avocato-db/src/core/integrity"
 	"avocato-db/src/core/ledger"
 	"avocato-db/src/storage/postgres"
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -29,22 +29,33 @@ func main() {
 	}
 	defer db.Close(context.Background())
 
-	// 2. Initialize Ledger Service
+	// 2. Boot Integrity Check
+	bootResult, err := integrity.RunBootCheck(ctx, cfg.WALPath, db)
+	if err != nil {
+		core.FatalError("Boot Integrity Check FAILED: %v", err)
+	}
+	if !bootResult.Passed {
+		core.FatalError("Boot Integrity Check FAILED. Halting.")
+	}
+
+	// 3. Initialize Ledger Service
 	ledgerService, err := ledger.NewService(cfg.WALPath, db)
 	if err != nil {
 		core.FatalError("Failed to initialize ledger service: %v", err)
 	}
 
-	// 3. Setup Routes
+	// 4. Setup Routes
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v1/append", handlers.NewAppendHandler(ledgerService))
+	mux.HandleFunc("/v1/integrity", handlers.NewIntegrityHandler(ledgerService, bootResult.MMR))
+	mux.HandleFunc("/v1/proof/", handlers.NewProofHandler())
 
 	server := &http.Server{
 		Addr:    ":" + cfg.APIPort,
 		Handler: mux,
 	}
 
-	// 4. Start Server
+	// 5. Start Server
 	go func() {
 		core.LogInfo("API ready on :%s", cfg.APIPort)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {

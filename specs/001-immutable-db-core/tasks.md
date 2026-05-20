@@ -63,13 +63,13 @@
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Integrate Merkle Mountain Range (MMR) in `src/core/integrity/mmr_manager.go`
-- [ ] T019 [US2] Implement Checkpoint persistence in `src/storage/postgres/checkpoints.sql`
-- [ ] T020 [US2] Implement Boot Integrity Check loop in `src/core/integrity/boot_check.go`
-- [ ] T021 [US2] Add Checkpoint logic to skip O(n) scan in `src/core/integrity/checkpoints.go`
-- [ ] T022 [US2] Create REST API handler for `/v1/integrity` in `src/api/handlers/integrity.go`
-- [ ] T023 [US2] Create REST API handler for `/v1/proof/{index}` in `src/api/handlers/proof.go`
-- [ ] T024 [US2] Add integration test for chain corruption detection in `tests/integration/integrity_test.go`
+- [x] T018 [US2] Integrate Merkle Mountain Range (MMR) in `src/core/integrity/mmr_manager.go`
+- [x] T019 [US2] Implement Checkpoint persistence in `src/storage/postgres/checkpoints.sql`
+- [x] T020 [US2] Implement Boot Integrity Check loop in `src/core/integrity/boot_check.go`
+- [x] T021 [US2] Add Checkpoint logic to skip O(n) scan in `src/core/integrity/checkpoints.go`
+- [x] T022 [US2] Create REST API handler for `/v1/integrity` in `src/api/handlers/integrity.go`
+- [x] T023 [US2] Create REST API handler for `/v1/proof/{index}` in `src/api/handlers/proof.go`
+- [x] T024 [US2] Add integration test for chain corruption detection in `tests/integration/integrity_test.go`
 
 **Checkpoint**: User Story 2 is complete. System ensures chain validity at every startup.
 
