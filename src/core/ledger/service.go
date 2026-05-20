@@ -17,6 +17,7 @@ type Service struct {
 	lastHash    [32]byte
 	groupCommit *GroupCommit
 	db          *pgx.Conn
+	cache       *Cache
 }
 
 func NewService(walPath string, db *pgx.Conn) (*Service, error) {
@@ -30,6 +31,7 @@ func NewService(walPath string, db *pgx.Conn) (*Service, error) {
 	s := &Service{
 		groupCommit: gc,
 		db:          db,
+		cache:       NewCache(1000), // Cache last 1000 blocks
 	}
 
 	if err := s.recoverState(); err != nil {
@@ -95,8 +97,61 @@ func (s *Service) Append(ctx context.Context, payload interface{}) (*Block, erro
 	s.lastIndex = index
 	s.lastHash = hash
 
+	// Add to cache
+	s.cache.Put(fmt.Sprintf("%d", block.Index), block)
+	s.cache.Put(fmt.Sprintf("%x", block.Hash), block)
+
 	core.LogInfo("Appended block %d with hash %x", index, hash)
 	return block, nil
+}
+
+func (s *Service) GetBlock(ctx context.Context, id string) (*Block, error) {
+	// 1. Try Cache
+	if b, ok := s.cache.Get(id); ok {
+		return b, nil
+	}
+
+	// 2. Try Postgres
+	b, err := s.readFromDB(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if b != nil {
+		s.cache.Put(fmt.Sprintf("%d", b.Index), b)
+		s.cache.Put(fmt.Sprintf("%x", b.Hash), b)
+	}
+
+	return b, nil
+}
+
+func (s *Service) readFromDB(ctx context.Context, id string) (*Block, error) {
+	var hashStr, prevHashStr string
+	var b Block
+	var query string
+	
+	// Determine if id is index or hash
+	var index uint64
+	if _, err := fmt.Sscanf(id, "%d", &index); err == nil {
+		query = "SELECT index, hash, prev_hash, created_at, payload FROM blocks WHERE index = $1"
+	} else {
+		query = "SELECT index, hash, prev_hash, created_at, payload FROM blocks WHERE hash = $1"
+	}
+	
+	err := s.db.QueryRow(ctx, query, id).Scan(
+		&b.Index, &hashStr, &prevHashStr, &b.Timestamp, &b.Payload,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	fmt.Sscanf(hashStr, "%x", &b.Hash)
+	fmt.Sscanf(prevHashStr, "%x", &b.PrevHash)
+
+	return &b, nil
 }
 
 func (s *Service) GetLastState() (uint64, [32]byte) {

@@ -83,10 +83,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T025 [US3] Implement Postgres lookup with BRIN index in `src/storage/postgres/reader.go`
-- [ ] T026 [US3] Create REST API handler for `/v1/block/{id}` in `src/api/handlers/get_block.go`
-- [ ] T027 [US3] Implement caching for the last N blocks in `src/core/ledger/cache.go`
-- [ ] T028 [US3] Add performance benchmark test for reads in `tests/bench/read_bench_test.go`
+- [x] T025 [US3] Implement Postgres lookup with BRIN index in `src/storage/postgres/reader.go`
+- [x] T026 [US3] Create REST API handler for `/v1/block/{id}` in `src/api/handlers/get_block.go`
+- [x] T027 [US3] Implement caching for the last N blocks in `src/core/ledger/cache.go`
+- [x] T028 [US3] Add performance benchmark test for reads in `tests/bench/read_bench_test.go`
 
 ---
 
@@ -94,8 +94,8 @@
 
 - [ ] T029 [P] Generate Swagger/OpenAPI documentation from contracts
 - [x] T030 [P] Implement graceful shutdown handling in `main.go`
-- [ ] T031 Final code cleanup and linter audit (Principle I)
-- [ ] T032 [P] Update `quickstart.md` with final API examples
+- [x] T031 Final code cleanup and linter audit (Principle I)
+- [x] T032 [P] Update `quickstart.md` with final API examples
 
 ---
 

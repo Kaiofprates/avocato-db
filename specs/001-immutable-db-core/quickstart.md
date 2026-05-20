@@ -32,9 +32,18 @@ curl -X POST http://localhost:8080/v1/append \
 curl http://localhost:8080/v1/integrity
 ```
 
-### Retrieve by Hash
+### Retrieve by Index or Hash
 ```bash
+# By Index
+curl http://localhost:8080/v1/block/1
+
+# By Hash
 curl http://localhost:8080/v1/block/<hash>
+```
+
+### Generate Proof (Stub)
+```bash
+curl http://localhost:8080/v1/proof/1
 ```
 
 ## Security Note

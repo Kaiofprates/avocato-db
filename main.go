@@ -49,6 +49,7 @@ func main() {
 	mux.HandleFunc("/v1/append", handlers.NewAppendHandler(ledgerService))
 	mux.HandleFunc("/v1/integrity", handlers.NewIntegrityHandler(ledgerService, bootResult.MMR))
 	mux.HandleFunc("/v1/proof/", handlers.NewProofHandler())
+	mux.HandleFunc("/v1/block/", handlers.NewGetBlockHandler(ledgerService))
 
 	server := &http.Server{
 		Addr:    ":" + cfg.APIPort,
