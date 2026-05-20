@@ -2,11 +2,14 @@ package postgres
 
 import (
 	"context"
+	"embed"
 	"fmt"
-	"os"
 
 	"github.com/jackc/pgx/v5"
 )
+
+//go:embed schema.sql
+var schemaFS embed.FS
 
 func Connect(ctx context.Context, url string) (*pgx.Conn, error) {
 	conn, err := pgx.Connect(ctx, url)
@@ -14,10 +17,10 @@ func Connect(ctx context.Context, url string) (*pgx.Conn, error) {
 		return nil, fmt.Errorf("unable to connect to database: %w", err)
 	}
 
-	// Initialize schema
-	schema, err := os.ReadFile("src/storage/postgres/schema.sql")
+	// Initialize schema from embedded file
+	schema, err := schemaFS.ReadFile("schema.sql")
 	if err != nil {
-		return nil, fmt.Errorf("failed to read schema file: %w", err)
+		return nil, fmt.Errorf("failed to read embedded schema: %w", err)
 	}
 
 	if _, err := conn.Exec(ctx, string(schema)); err != nil {
