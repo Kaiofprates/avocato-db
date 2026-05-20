@@ -13,11 +13,11 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Initialize Go project with `go mod init avocato-db`
-- [ ] T002 [P] Create project structure `src/core`, `src/storage`, `src/api`, `src/config`
-- [ ] T003 [P] Add primary dependencies: `json-canon`, `mmr`, `pgx/v5`
-- [ ] T004 Create `docker-compose.yml` with PostgreSQL 16 and backend service
-- [ ] T005 [P] Setup `src/config/config.go` for environment variable management
+- [x] T001 Initialize Go project with `go mod init avocato-db`
+- [x] T002 [P] Create project structure `src/core`, `src/storage`, `src/api`, `src/config`
+- [x] T003 [P] Add primary dependencies: `json-canon`, `mmr`, `pgx/v5`
+- [x] T004 Create `docker-compose.yml` with PostgreSQL 16 and backend service
+- [x] T005 [P] Setup `src/config/config.go` for environment variable management
 
 ---
 
@@ -25,12 +25,12 @@
 
 **Purpose**: Core infrastructure for Hybrid Storage and Deterministic Serialization
 
-- [ ] T006 Implement deterministic JCS serialization wrapper in `src/core/crypto/jcs.go`
-- [ ] T007 Setup PostgreSQL schema with immutability triggers in `src/storage/postgres/schema.sql`
-- [ ] T008 Implement low-level WAL file writer with `O_APPEND` in `src/storage/wal/writer.go`
-- [ ] T009 [P] Implement Group Commit coordinator in `src/core/ledger/group_commit.go`
-- [ ] T010 Create base `Block` struct and binary encoding in `src/core/ledger/block.go`
-- [ ] T011 [P] Setup central error handling and logging in `src/core/logger.go`
+- [x] T006 Implement deterministic JCS serialization wrapper in `src/core/crypto/jcs.go`
+- [x] T007 Setup PostgreSQL schema with immutability triggers in `src/storage/postgres/schema.sql`
+- [x] T008 Implement low-level WAL file writer with `O_APPEND` in `src/storage/wal/writer.go`
+- [x] T009 [P] Implement Group Commit coordinator in `src/core/ledger/group_commit.go`
+- [x] T010 Create base `Block` struct and binary encoding in `src/core/ledger/block.go`
+- [x] T011 [P] Setup central error handling and logging in `src/core/logger.go`
 
 **Checkpoint**: Foundation ready - hybrid storage and crypto primitives are available.
 
@@ -44,11 +44,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T012 [US1] Implement hash calculation logic in `src/core/ledger/hasher.go`
-- [ ] T013 [US1] Implement `AppendBlock` service logic in `src/core/ledger/service.go`
-- [ ] T014 [US1] Create REST API handler for `/v1/append` in `src/api/handlers/append.go`
-- [ ] T015 [US1] Integrate WAL and Postgres persistence in the append flow
-- [ ] T016 [US1] Implement response serialization with new block hash and index
+- [x] T012 [US1] Implement hash calculation logic in `src/core/ledger/hasher.go`
+- [x] T013 [US1] Implement `AppendBlock` service logic in `src/core/ledger/service.go`
+- [x] T014 [US1] Create REST API handler for `/v1/append` in `src/api/handlers/append.go`
+- [x] T015 [US1] Integrate WAL and Postgres persistence in the append flow
+- [x] T016 [US1] Implement response serialization with new block hash and index
 - [ ] T017 [US1] Add integration test for concurrent appends in `tests/integration/append_test.go`
 
 **Checkpoint**: User Story 1 (MVP) is fully functional. Records can be appended securely.
@@ -93,7 +93,7 @@
 ## Phase 6: Polish & Cross-Cutting Concerns
 
 - [ ] T029 [P] Generate Swagger/OpenAPI documentation from contracts
-- [ ] T030 [P] Implement graceful shutdown handling in `main.go`
+- [x] T030 [P] Implement graceful shutdown handling in `main.go`
 - [ ] T031 Final code cleanup and linter audit (Principle I)
 - [ ] T032 [P] Update `quickstart.md` with final API examples
 

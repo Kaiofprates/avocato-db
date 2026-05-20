@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: avocato
+      POSTGRES_PASSWORD: avocato_password
+      POSTGRES_DB: avocato_ledger
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U avocato -d avocato_ledger"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: .
+    environment:
+      DB_URL: postgres://avocato:avocato_password@db:5432/avocato_ledger
+      API_PORT: 8080
+      WAL_PATH: /data/ledger.wal
+      LOG_LEVEL: info
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/data
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
