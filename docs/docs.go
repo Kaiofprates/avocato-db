@@ -149,6 +149,9 @@ const docTemplate = `{
                         },
                         "timestamp": {
                             "type": "integer"
+                        },
+                        "uuid": {
+                            "type": "string"
                         }
                     }
                 },

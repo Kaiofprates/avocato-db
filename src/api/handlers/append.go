@@ -15,6 +15,7 @@ type AppendResponse struct {
 	Status string `json:"status"`
 	Data   struct {
 		Index     uint64 `json:"index"`
+		UUID      string `json:"uuid"`
 		Hash      string `json:"hash"`
 		PrevHash  string `json:"prev_hash"`
 		Timestamp int64  `json:"timestamp"`
@@ -55,6 +56,7 @@ func NewAppendHandler(service *ledger.Service) http.HandlerFunc {
 			Status: "success",
 		}
 		resp.Data.Index = block.Index
+		resp.Data.UUID = block.UUID
 		resp.Data.Hash = fmt.Sprintf("%x", block.Hash)
 		resp.Data.PrevHash = fmt.Sprintf("%x", block.PrevHash)
 		resp.Data.Timestamp = block.Timestamp

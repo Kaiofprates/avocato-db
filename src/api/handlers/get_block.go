@@ -54,6 +54,7 @@ func NewGetBlockHandler(service *ledger.Service) http.HandlerFunc {
 
 		resp := BlockResponse{
 			Index:     block.Index,
+			UUID:      block.UUID,
 			Hash:      fmt.Sprintf("%x", block.Hash),
 			PrevHash:  fmt.Sprintf("%x", block.PrevHash),
 			Timestamp: block.Timestamp,

@@ -143,6 +143,9 @@
                         },
                         "timestamp": {
                             "type": "integer"
+                        },
+                        "uuid": {
+                            "type": "string"
                         }
                     }
                 },
