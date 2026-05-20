@@ -8,8 +8,8 @@ import (
 )
 
 // CalculateBlockHash computes the SHA-256 hash of a block using JCS canonicalization.
-// Hash = SHA256(JCS(index + timestamp + prev_hash + JCS(payload)))
-func CalculateBlockHash(index uint64, timestamp int64, prevHash [32]byte, payload interface{}) ([32]byte, []byte, error) {
+// Hash = SHA256(JCS(index + uuid + timestamp + prev_hash + JCS(payload)))
+func CalculateBlockHash(index uint64, uid string, timestamp int64, prevHash [32]byte, payload interface{}) ([32]byte, []byte, error) {
 	// 1. Canonicalize payload
 	payloadRaw, err := json.Marshal(payload)
 	if err != nil {
@@ -21,9 +21,9 @@ func CalculateBlockHash(index uint64, timestamp int64, prevHash [32]byte, payloa
 	}
 
 	// 2. Prepare block structure for hashing
-	// We use a map to ensure JCS handles key ordering
 	blockMap := map[string]interface{}{
 		"index":     index,
+		"uuid":      uid,
 		"timestamp": timestamp,
 		"prev_hash": fmt.Sprintf("%x", prevHash),
 		"payload":   json.RawMessage(payloadCanon),

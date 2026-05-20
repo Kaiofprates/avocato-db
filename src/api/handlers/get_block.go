@@ -10,6 +10,7 @@ import (
 
 type BlockResponse struct {
 	Index     uint64      `json:"index"`
+	UUID      string      `json:"uuid"`
 	Hash      string      `json:"hash"`
 	PrevHash  string      `json:"prev_hash"`
 	Timestamp int64       `json:"timestamp"`
@@ -17,11 +18,11 @@ type BlockResponse struct {
 }
 
 // NewGetBlockHandler godoc
-// @Summary      Get block by index or hash
-// @Description  Retrieves a specific block from the ledger
+// @Summary      Get block by UUID, hash or index
+// @Description  Retrieves a specific block from the ledger. UUID or Hash are recommended for security.
 // @Tags         ledger
 // @Produce      json
-// @Param        id   path      string  true  "Block index or hash"
+// @Param        id   path      string  true  "Block UUID, hash or index"
 // @Success      200  {object}  BlockResponse
 // @Failure      404  {string}  string "Block not found"
 // @Router       /v1/block/{id} [get]

@@ -31,6 +31,8 @@ definitions:
         type: string
       timestamp:
         type: integer
+      uuid:
+        type: string
     type: object
   handlers.IntegrityResponse:
     properties:
@@ -86,9 +88,10 @@ paths:
       - ledger
   /v1/block/{id}:
     get:
-      description: Retrieves a specific block from the ledger
+      description: Retrieves a specific block from the ledger. UUID or Hash are recommended
+        for security.
       parameters:
-      - description: Block index or hash
+      - description: Block UUID, hash or index
         in: path
         name: id
         required: true
@@ -104,7 +107,7 @@ paths:
           description: Block not found
           schema:
             type: string
-      summary: Get block by index or hash
+      summary: Get block by UUID, hash or index
       tags:
       - ledger
   /v1/integrity:

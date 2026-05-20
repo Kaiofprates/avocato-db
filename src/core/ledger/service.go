@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -64,16 +65,18 @@ func (s *Service) Append(ctx context.Context, payload interface{}) (*Block, erro
 	defer s.mu.Unlock()
 
 	index := s.lastIndex + 1
+	uid := uuid.New().String()
 	timestamp := time.Now().UnixNano()
 	prevHash := s.lastHash
 
-	hash, canonPayload, err := CalculateBlockHash(index, timestamp, prevHash, payload)
+	hash, canonPayload, err := CalculateBlockHash(index, uid, timestamp, prevHash, payload)
 	if err != nil {
 		return nil, err
 	}
 
 	block := &Block{
 		Index:     index,
+		UUID:      uid,
 		Timestamp: timestamp,
 		PrevHash:  prevHash,
 		Payload:   canonPayload,
@@ -88,8 +91,8 @@ func (s *Service) Append(ctx context.Context, payload interface{}) (*Block, erro
 	}
 
 	// 2. Persist to Postgres
-	_, err = s.db.Exec(ctx, "INSERT INTO blocks (index, hash, prev_hash, created_at, payload) VALUES ($1, $2, $3, $4, $5)",
-		block.Index, fmt.Sprintf("%x", block.Hash), fmt.Sprintf("%x", block.PrevHash), block.Timestamp, block.Payload)
+	_, err = s.db.Exec(ctx, "INSERT INTO blocks (index, uuid, hash, prev_hash, created_at, payload) VALUES ($1, $2, $3, $4, $5, $6)",
+		block.Index, block.UUID, fmt.Sprintf("%x", block.Hash), fmt.Sprintf("%x", block.PrevHash), block.Timestamp, block.Payload)
 	if err != nil {
 		return nil, fmt.Errorf("postgres write failed: %w", err)
 	}
@@ -99,6 +102,7 @@ func (s *Service) Append(ctx context.Context, payload interface{}) (*Block, erro
 
 	// Add to cache
 	s.cache.Put(fmt.Sprintf("%d", block.Index), block)
+	s.cache.Put(fmt.Sprintf("%s", block.UUID), block)
 	s.cache.Put(fmt.Sprintf("%x", block.Hash), block)
 
 	core.LogInfo("Appended block %d with hash %x", index, hash)
@@ -119,6 +123,7 @@ func (s *Service) GetBlock(ctx context.Context, id string) (*Block, error) {
 
 	if b != nil {
 		s.cache.Put(fmt.Sprintf("%d", b.Index), b)
+		s.cache.Put(fmt.Sprintf("%s", b.UUID), b)
 		s.cache.Put(fmt.Sprintf("%x", b.Hash), b)
 	}
 
@@ -130,16 +135,17 @@ func (s *Service) readFromDB(ctx context.Context, id string) (*Block, error) {
 	var b Block
 	var query string
 	
-	// Determine if id is index or hash
-	var index uint64
-	if _, err := fmt.Sscanf(id, "%d", &index); err == nil {
-		query = "SELECT index, hash, prev_hash, created_at, payload FROM blocks WHERE index = $1"
+	// Determine if id is index, UUID or hash
+	if _, err := uuid.Parse(id); err == nil {
+		query = "SELECT index, hash, prev_hash, created_at, payload, uuid FROM blocks WHERE uuid = $1"
+	} else if len(id) == 64 { // Probable SHA-256 hash
+		query = "SELECT index, hash, prev_hash, created_at, payload, uuid FROM blocks WHERE hash = $1"
 	} else {
-		query = "SELECT index, hash, prev_hash, created_at, payload FROM blocks WHERE hash = $1"
+		query = "SELECT index, hash, prev_hash, created_at, payload, uuid FROM blocks WHERE index = $1"
 	}
 	
 	err := s.db.QueryRow(ctx, query, id).Scan(
-		&b.Index, &hashStr, &prevHashStr, &b.Timestamp, &b.Payload,
+		&b.Index, &hashStr, &prevHashStr, &b.Timestamp, &b.Payload, &b.UUID,
 	)
 	if err != nil {
 		if err == pgx.ErrNoRows {
