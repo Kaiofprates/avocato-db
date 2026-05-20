@@ -54,6 +54,16 @@ func DecodeBlock(r io.Reader) (*Block, error) {
 		return nil, err
 	}
 
+	// Minimum possible length: 4 (totalLen) + 8 (index) + 16 (uuid) + 8 (ts) + 32 (prevHash) + 4 (payloadLen) + 0 (payload) + 32 (hash) + 4 (checksum) = 108
+	if totalLen < 108 {
+		return nil, fmt.Errorf("block too small: %d", totalLen)
+	}
+
+	// Prevent huge allocations (e.g., 100MB limit)
+	if totalLen > 100*1024*1024 {
+		return nil, fmt.Errorf("block too large: %d", totalLen)
+	}
+
 	buf := make([]byte, totalLen)
 	binary.BigEndian.PutUint32(buf[0:4], totalLen)
 	if _, err := io.ReadFull(r, buf[4:]); err != nil {
@@ -70,12 +80,23 @@ func DecodeBlock(r io.Reader) (*Block, error) {
 	b := &Block{}
 	b.Index = binary.BigEndian.Uint64(buf[4:12])
 	
-	uid, _ := uuid.FromBytes(buf[12:28])
+	uid, err := uuid.FromBytes(buf[12:28])
+	if err != nil {
+		return nil, fmt.Errorf("invalid uuid in block: %w", err)
+	}
 	b.UUID = uid.String()
 	
 	b.Timestamp = int64(binary.BigEndian.Uint64(buf[28:36]))
 	copy(b.PrevHash[:], buf[36:68])
+	
 	payloadLen := binary.BigEndian.Uint32(buf[68:72])
+	
+	// Validate payloadLen against totalLen
+	// totalLen = header(72) + payload(payloadLen) + hash(32) + checksum(4)
+	if 72+payloadLen+32+4 != totalLen {
+		return nil, fmt.Errorf("payload length mismatch: payload %d, total %d", payloadLen, totalLen)
+	}
+
 	b.Payload = make([]byte, payloadLen)
 	copy(b.Payload, buf[72:72+payloadLen])
 	copy(b.Hash[:], buf[72+payloadLen:104+payloadLen])
