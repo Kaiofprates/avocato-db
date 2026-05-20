@@ -30,13 +30,11 @@ func RunBootCheck(ctx context.Context, walPath string, db *pgx.Conn) (*BootCheck
 		return nil, err
 	}
 
-	startIndex := uint64(0)
 	var expectedPrevHash [32]byte
 	mmr := NewMMR()
 
 	if cp != nil {
 		core.LogInfo("Found checkpoint at index %d, skipping earlier blocks", cp.LastIndex)
-		startIndex = cp.LastIndex
 		fmt.Sscanf(cp.LastHash, "%x", &expectedPrevHash)
 		// We can't rebuild the full MMR from just the root, but for the POC we'll rebuild the MMR
 		// from scratch by reading the file. A real MMR checkpoint would store the peaks.
@@ -44,7 +42,6 @@ func RunBootCheck(ctx context.Context, walPath string, db *pgx.Conn) (*BootCheck
 		// Actually, let's just do a full scan since our file isn't indexed by size yet.
 		// To properly skip, we'd need an index of file offsets.
 		core.LogInfo("POC mode: performing full WAL scan to rebuild MMR peaks.")
-		startIndex = 0
 		expectedPrevHash = [32]byte{}
 	}
 
