@@ -31,7 +31,11 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- [ ] **Code Quality**: Architecture follows SOLID/DRY; no over-engineering planned.
+- [ ] **Testing Standards**: Plan includes unit and integration tests; Red-Green-Refactor path defined.
+- [ ] **UX Consistency**: CLI/API design matches existing project patterns; feedback is actionable.
+- [ ] **Performance**: Impact on latency/resources analyzed; benchmarks defined if necessary.
+- [ ] **Scalability**: Solution supports horizontal scaling or justifies why not needed.
 
 ## Project Structure
 
