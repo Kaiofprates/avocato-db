@@ -16,6 +16,15 @@ type BlockResponse struct {
 	Payload   interface{} `json:"payload"`
 }
 
+// NewGetBlockHandler godoc
+// @Summary      Get block by index or hash
+// @Description  Retrieves a specific block from the ledger
+// @Tags         ledger
+// @Produce      json
+// @Param        id   path      string  true  "Block index or hash"
+// @Success      200  {object}  BlockResponse
+// @Failure      404  {string}  string "Block not found"
+// @Router       /v1/block/{id} [get]
 func NewGetBlockHandler(service *ledger.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {

@@ -13,7 +13,24 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	_ "avocato-db/docs"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
+
+// @title           avocato-db API
+// @version         1.2.0
+// @description     Immutable, append-only, hash-protected database engine.
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.url    https://github.com/Kaiofprates/avocato-db
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:8080
+// @BasePath  /
 
 func main() {
 	cfg := config.LoadConfig()
@@ -50,6 +67,9 @@ func main() {
 	mux.HandleFunc("/v1/integrity", handlers.NewIntegrityHandler(ledgerService, bootResult.MMR))
 	mux.HandleFunc("/v1/proof/", handlers.NewProofHandler())
 	mux.HandleFunc("/v1/block/", handlers.NewGetBlockHandler(ledgerService))
+	
+	// Swagger UI
+	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 
 	server := &http.Server{
 		Addr:    ":" + cfg.APIPort,
@@ -59,6 +79,7 @@ func main() {
 	// 5. Start Server
 	go func() {
 		core.LogInfo("API ready on :%s", cfg.APIPort)
+		core.LogInfo("Swagger UI available at http://localhost:%s/swagger/index.html", cfg.APIPort)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			core.LogError("Server failed: %v", err)
 		}

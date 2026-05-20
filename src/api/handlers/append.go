@@ -21,6 +21,17 @@ type AppendResponse struct {
 	} `json:"data"`
 }
 
+// NewAppendHandler godoc
+// @Summary      Append data to the ledger
+// @Description  Creates a new immutable block with the provided payload
+// @Tags         ledger
+// @Accept       json
+// @Produce      json
+// @Param        payload  body      AppendRequest  true  "Data payload"
+// @Success      201      {object}  AppendResponse
+// @Failure      400      {string}  string "Invalid request body"
+// @Failure      500      {string}  string "Internal server error"
+// @Router       /v1/append [post]
 func NewAppendHandler(service *ledger.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {

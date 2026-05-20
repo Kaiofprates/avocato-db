@@ -13,6 +13,13 @@ type IntegrityResponse struct {
 	Status      string `json:"status"`
 }
 
+// NewIntegrityHandler godoc
+// @Summary      Get ledger integrity status
+// @Description  Returns the current state of the ledger and the MMR root
+// @Tags         integrity
+// @Produce      json
+// @Success      200      {object}  IntegrityResponse
+// @Router       /v1/integrity [get]
 func NewIntegrityHandler(service *ledger.Service, mmr *integrity.MMR) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {

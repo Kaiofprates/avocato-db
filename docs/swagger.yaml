@@ -1,0 +1,123 @@
+basePath: /
+definitions:
+  handlers.AppendRequest:
+    properties:
+      payload: {}
+    type: object
+  handlers.AppendResponse:
+    properties:
+      data:
+        properties:
+          hash:
+            type: string
+          index:
+            type: integer
+          prev_hash:
+            type: string
+          timestamp:
+            type: integer
+        type: object
+      status:
+        type: string
+    type: object
+  handlers.BlockResponse:
+    properties:
+      hash:
+        type: string
+      index:
+        type: integer
+      payload: {}
+      prev_hash:
+        type: string
+      timestamp:
+        type: integer
+    type: object
+  handlers.IntegrityResponse:
+    properties:
+      mmr_root:
+        type: string
+      status:
+        type: string
+      total_blocks:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: API Support
+    url: https://github.com/Kaiofprates/avocato-db
+  description: Immutable, append-only, hash-protected database engine.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: avocato-db API
+  version: 1.2.0
+paths:
+  /v1/append:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new immutable block with the provided payload
+      parameters:
+      - description: Data payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.AppendRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.AppendResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Append data to the ledger
+      tags:
+      - ledger
+  /v1/block/{id}:
+    get:
+      description: Retrieves a specific block from the ledger
+      parameters:
+      - description: Block index or hash
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.BlockResponse'
+        "404":
+          description: Block not found
+          schema:
+            type: string
+      summary: Get block by index or hash
+      tags:
+      - ledger
+  /v1/integrity:
+    get:
+      description: Returns the current state of the ledger and the MMR root
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.IntegrityResponse'
+      summary: Get ledger integrity status
+      tags:
+      - integrity
+swagger: "2.0"
