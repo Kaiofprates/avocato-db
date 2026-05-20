@@ -93,6 +93,33 @@ curl http://localhost:8080/v1/block/<hash_hexadecimal>
 
 ---
 
+## 🔧 Troubleshooting & Reset
+
+Como o **avocato-db** preza pela integridade absoluta, mudanças na arquitetura (como a adição de novos campos no bloco) ou corrupção proposital do disco invalidam a cadeia atual. 
+
+Caso precise resetar o ambiente para começar uma nova corrente limpa:
+
+1. **Derrube os containers e apague os volumes:**
+   ```bash
+   docker-compose down -v
+   ```
+
+2. **Limpe os dados residuais do WAL:**
+   ```bash
+   # No Windows (PowerShell)
+   if (Test-Path ./data) { Remove-Item -Recurse -Force ./data }
+   
+   # No Linux/Mac
+   rm -rf ./data
+   ```
+
+3. **Suba o ambiente novamente:**
+   ```bash
+   docker-compose up --build -d
+   ```
+
+---
+
 ## ⚖️ Constituição do Projeto
 
 O avocato-db é regido pela [avocato-db Constitution v1.1.0](.specify/memory/constitution.md). Algumas regras invioláveis:

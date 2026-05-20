@@ -71,18 +71,18 @@ const docTemplate = `{
         },
         "/v1/block/{id}": {
             "get": {
-                "description": "Retrieves a specific block from the ledger. UUID or Hash are recommended for security.",
+                "description": "Retrieves a specific block from the ledger using its unique UUID. Indices and hashes are not allowed for external lookups.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "ledger"
                 ],
-                "summary": "Get block by UUID, hash or index",
+                "summary": "Get block by UUID",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Block UUID, hash or index",
+                        "description": "Block UUID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -93,6 +93,12 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/handlers.BlockResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid UUID format",
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     "404": {
