@@ -89,6 +89,8 @@
 - **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
 - **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
 - **FR-005**: System MUST [behavior, e.g., "log all security events"]
+- **FR-UX**: System MUST maintain consistency with established UX patterns (Principle III)
+- **FR-PERF**: System MUST meet defined performance benchmarks (Principle IV)
 
 *Example of marking unclear requirements:*
 

@@ -1,0 +1,99 @@
+package main
+
+import (
+	"avocato-db/src/api/handlers"
+	"avocato-db/src/config"
+	"avocato-db/src/core"
+	"avocato-db/src/core/integrity"
+	"avocato-db/src/core/ledger"
+	"avocato-db/src/storage/postgres"
+	"context"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	_ "avocato-db/docs"
+	httpSwagger "github.com/swaggo/http-swagger"
+)
+
+// @title           avocato-db API
+// @version         1.2.0
+// @description     Immutable, append-only, hash-protected database engine.
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.url    https://github.com/Kaiofprates/avocato-db
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:8080
+// @BasePath  /
+
+func main() {
+	cfg := config.LoadConfig()
+	core.LogInfo("Starting avocato-db on port %s...", cfg.APIPort)
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	// 1. Connect to Postgres
+	db, err := postgres.Connect(ctx, cfg.DBURL)
+	if err != nil {
+		core.FatalError("Failed to connect to database: %v", err)
+	}
+	defer db.Close(context.Background())
+
+	// 2. Boot Integrity Check
+	bootResult, err := integrity.RunBootCheck(ctx, cfg.WALPath, db)
+	if err != nil {
+		core.FatalError("Boot Integrity Check FAILED: %v", err)
+	}
+	if !bootResult.Passed {
+		core.FatalError("Boot Integrity Check FAILED. Halting.")
+	}
+
+	// 3. Initialize Ledger Service
+	ledgerService, err := ledger.NewService(cfg.WALPath, db)
+	if err != nil {
+		core.FatalError("Failed to initialize ledger service: %v", err)
+	}
+
+	// 4. Setup Routes
+	mux := http.NewServeMux()
+	mux.HandleFunc("/v1/append", handlers.NewAppendHandler(ledgerService))
+	mux.HandleFunc("/v1/integrity", handlers.NewIntegrityHandler(ledgerService, bootResult.MMR))
+	mux.HandleFunc("/v1/proof/", handlers.NewProofHandler())
+	mux.HandleFunc("/v1/block/", handlers.NewGetBlockHandler(ledgerService))
+	
+	// Swagger UI
+	mux.Handle("/swagger/", httpSwagger.WrapHandler)
+
+	server := &http.Server{
+		Addr:    ":" + cfg.APIPort,
+		Handler: mux,
+	}
+
+	// 5. Start Server
+	go func() {
+		core.LogInfo("API ready on :%s", cfg.APIPort)
+		core.LogInfo("Swagger UI available at http://localhost:%s/swagger/index.html", cfg.APIPort)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			core.LogError("Server failed: %v", err)
+		}
+	}()
+
+	<-ctx.Done()
+	core.LogInfo("Shutting down gracefully...")
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		core.LogError("Server shutdown failed: %v", err)
+	}
+	
+	core.LogInfo("Exiting.")
+}
